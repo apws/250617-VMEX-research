@@ -1,0 +1,7 @@
+{
+    "sketch": "sally-00.ino",
+    "configuration": "chip=3227,clocko=20internal,millis=enabled,bodvoltage=1v8,bodmode=disabled,resetpinopti_2=UPDIaltrst,startuptimeopti=8,bootloaderuart=default,wiremode=mors,printf=default,attach=allenabled",
+    "board": "megaTinyCore:megaavr:atx27o",
+    "port": "COM4",
+    "programmer": "nedbg"
+}

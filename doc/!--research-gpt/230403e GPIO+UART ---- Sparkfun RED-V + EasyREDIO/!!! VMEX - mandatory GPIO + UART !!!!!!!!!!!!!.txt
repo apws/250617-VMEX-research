@@ -1,0 +1,28 @@
+
+I originally considered SW UART, but this might be finally FAR HARDER AND LARGER
+
+If MCU supports UART HW, then we will code its support layer using SDK tools
+to implement uniform access to GPIO + HW UART
+
+OR
+
+we can simply implement ONLY HW UART as MANDATORY .......
+
+BECASE ... we originally thought that GPIO will be mandatory for SW UART !!!!!!!!!!!!!!
+
+!!!!!!!!!!!!!!!!!!!!!!!
+
+
+We CANT flash totally unknown parts, there MUST be declared support for the chip
+having implemented at least HW UART layer to start communication with MCU HW (so ALSO GPIO)
+
+And then we can implement GPIO for that part in ASLIX on VMEX tooo !!!!!!!!!!!!
+
+May be THIS approach will be easiest ??????????????
+
+
+BUT we need to have working GPIO ASAP !!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+this is really matter of what will be SIMPLER/SHORTER in code !!!

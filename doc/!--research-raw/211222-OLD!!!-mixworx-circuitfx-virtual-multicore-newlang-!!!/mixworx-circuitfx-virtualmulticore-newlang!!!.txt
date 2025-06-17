@@ -1,0 +1,23 @@
+
+transpile java-like written core to NEW VIRTUAL MULTICORE PROCESSOR ENGINE
+============================================================================
+
+-- define VIRTUAL MULTICORE simple instructions processor to be interpretable even 8bit MCUs (ARDUINO C++)
+-- as simplest/fast as possible to provide 16bit INTEGER MATH/LOGIC, FLOW CONTROL, V-MEMORY, V-IO
+-- PLA/microcode processing based on orthogonal ISA
+-- configurable register/vars/context area size, transparently multicore operation, basic sync/pio
+-- run any paralel tasks only on virtual cores (# of cores defined by target MCU/CPU posibilities only)
+-- functions based async/await operation against virtual cores
+-- tiny! tiny! tiny! - portable to EVERYWHERE !!! (at first, everywhere through ARDUINO !!!)
+-- replace any micropython/tinygo finally ... with code based in JAVA-like language coded in IntelliJ IDEA !!!
+
+
+WELL - BIG QUESTION
+===================
+
+A) RISC-V INSPIRED  = register based risc
+
+B) PYTHON INSPIRED  = stack based vm
+
+
+

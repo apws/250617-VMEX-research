@@ -1,0 +1,89 @@
+--- #dsfsfsdfsdfsdfs
+
+# feature = in fact interface
+- feat Tasking:
+  - Task(string name)
+  - Next()
+
+
+# type / struct / class definition
+- type MyRecord ( Tasking, Enumerable ): # implements
+  - byte n
+  - string FirstName[20], LastName[20]
+  - byte status
+
+# function / method definition
+- func u8 PokusCalc( u8 test, s8 pokus, bool try, string name ):
+  - s16 i, j, k; u8 df, tfg
+  - u8 st[10], b[20], c[]
+
+  - i=$0F; j=0xEA
+  - a=[1, 2, 5, 14]; b[0]=32
+  - c <= 14; c <= [ 25, 14 ]
+
+  - # cdfgdgdgdgd gd gdgdgdg dgd
+  - # dssfsf ssfsdf sf sfsffsfsf sfsdfsdfsf
+  - i++; j++
+  - i=+3; j=+7
+  -
+  - do:
+    - if i>5:
+      - dsf
+      - sdfsdf
+      - sdfsdf
+    - elseif i>2:
+      - sdf
+      - sdfsdf
+    - else:
+      - ddsfd
+
+    # sdfsdfsdfsdfsdfsdfsfsdf
+  - do: 
+    - while j>0
+    - sdf
+    - sdfsd
+    - sdfs
+    - j--
+
+  # sdsdfs  sdf sdfsdf 
+  - do:
+    - dssdf
+    - sdfsdf
+    - sdf
+    - j--
+    - until j==0
+
+  # dsssssssssdsd sd sd sd sd 
+  - do:
+    - for i=0, i<10, i++
+    - sdf
+    - sdf
+    - sdf
+
+  # ffffffffffffffffff  
+  - c <<< PokusCalc(i, j, true, "sdfsdfsdf")
+  - 
+  - do:
+    - foreach c
+    - asdasd
+    - asdasdas
+  -
+  # asdfdf sdsdf
+  
+
+  # sdfsdfsdfsdfsdfsdfsfsdf  
+  - do:
+      - switch j:
+        - case 2:
+          - sdfsd
+          - sdfsdff
+        - case 4:
+        - case 5:
+          - asasd
+        -
+        - case 14: fire()
+        - case 21: test(“init”)
+        - else:
+          - xx
+        -
+        -

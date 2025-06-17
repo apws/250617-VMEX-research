@@ -1,0 +1,29 @@
+2000 '
+2005 'optimizations: -Og -Os -Ofast(-O3)
+2001 '
+2010 'ESP32 Dev Module 240MHz  =  1.50s |  1.35s |  0.83s      2M  350k
+2020 'Infineon XMC4400 P2Go    =  2.36s |  2.31s |  1.17s    256k   80k
+2030 'NodeMCU 1.0 160MHz       =  2.54s |  2.21s |  1.50s      2M  350k
+2040 'Sony Spresense           =  2.47s |  2.65s |  1.56s    768k  768k (unified-ram)
+2050 'Raspberry Pi PICO        =  2.30s |  2.65s |  1.70s     16M  270k
+
+2060 'STM32L433RC-P Nucleo-64  =  2.96s |  3.18s |  1.93s    256k   64k
+2070 'STM32G031K8 Nucleo-32    =  5.49s |  5.70s |  3.30s     64k    8k (low ram)
+2080 'arduino zero             =  6.32s |  7.31s |  4.29s    256k   32k
+
+2090 'Infineon XMC2Go          = 12.70s | 13.58s | ------     32k   16k
+2100 'at128db28                = ------ | 13.97s | 10.00s    128k   16k (8bit)
+
+
+2110 'attiny3226               =                 |            32k    3k
+2110 'attiny1627 CNANO         = 15.53s   16.74s | 11.88s     16k    2k
+
+2120 'atmega328p xplained mini = 19.20s | 21.18s | 15.25s     32k    2k
+2130 'arduino Leonardo         = 19.13s | 21.32s | 15.38s     32k    2k
+2140 'arduino nano every       = 19.83s | 21.72s | 15.15s     48k    6k
+
+2150 'STM32L552ZE-Q Nucleo-144 - Serial port TOTALLY FAILS !!!
+
+3000 'Seeduino XIAO - unable to upload anything by arduino !!!!! SHIT !!!!!
+3001 '(uploading UF2 CircuitPython works, but unbricking to arduino NOT !!!)
+

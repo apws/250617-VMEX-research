@@ -1,0 +1,502 @@
+
+//ASLIX syntax is INTENTIONALLY different enought from C, to NOT be confusing !!!!!!!!!!!!!!!!!!!!
+//so there is IF ELSE ELSEIF ENDIF, but there is LOOP[if] AGAIN[if] for loops and there is CASE WHEN ENDCASE
+//but syntax of ALL operators is superset of C/C++/C#/TS !!!!!!!!!!!!!!!
+
+//instruction type enum
+R3_TYPE: $30
+R2_TYPE: $20
+RC_TYPE: $C0
+RD_TYPE: $D0
+
+I1_TYPE: $10
+IA_TYPE: $A0
+I4_TYPE: $40
+IE_TYPE: $E0
+
+SF_TYPE: $F0
+SB_TYPE: $B0
+S8_TYPE: $80
+
+U7_TYPE: $70
+U6_TYPE: $60
+
+R9_TYPE: $90 //reserved
+R0_TYPE: $00 //reserved (NOP)
+
+
+//instruction opcodes enum
+
+//OP 00-NOP
+OP00_NOP:      $00
+
+
+//OP R3-TYPE
+OPR31_ADD:     $31
+OPR32_SUB:     $32
+OPR33_XOR:     $33
+OPR34_AND:     $34
+OPR35_OR:      $35
+OPR36_SLL:     $36
+...
+
+
+DATA_SIZE: 32
+PROG_SIZE: 32
+
+//memory struct
+core:
+    regs[16]:          TU32
+    rsvd[42*4]:        TU32
+    pc:                TU32
+    data[DATA_SIZE]:   TU8
+    prog[PROG_SIZE]:   TU8
+
+
+func vmex
+
+    //symbol regs
+    opcode: x3   TU8
+    rs1:    x4   TU8
+    rs2:    x5   TU8
+    rd:     x6   TU8
+    imm:    x7   TS16
+    pc:     x8
+
+    //symbol regs with init, so compile instructions ??
+    _core_: x9   TU32 := @core
+    _reg_:  x10  TU32 := @_core_.regs
+    _prog_: x11  TU32 := @_core_.prog
+    _data_: x12  TU32 := @_core_.data
+    _pc_:   x13  TU32 := @_core_.pc
+
+    tmp:     x15   TU32
+    tmp1:    x7    TU32 //imm alias,union ??
+    tmp2:    x5    TU32 //rs2 alias,union ??
+
+    //init memory struct
+    core := 0
+
+    pc = _core.pc //=0 here
+
+    loopif (pc < progsize) //progsize here undefined !!!
+
+        //parameters parsing
+        //TU8* _op_ = (TU8*)&_prog_[pc];
+        //opcode = *_op_;
+
+        opcode    = _prog[pc]
+        opcode    &= $0F
+
+        //for switch I am considering rather pascal terms, so case(selection) when X: when Y: .... endcase !!!!!!!!!!!!!!
+        switch (opcode)
+            case R3_TYPE:
+            case R2_TYPE:
+            case RC_TYPE:
+            case RD_TYPE:
+                rd   =    _op_[1]
+                rd   >>=  4
+                rs1  =    _op_[2]
+                rs1  >>=  4
+                rs2  =    _op_[3]
+                rs2  >>=  4
+            case I1_TYPE:
+            case IA_TYPE:
+            case I4_TYPE:
+            case IE_TYPE:
+                rd   =    _op_[1]
+                rd   >>=  4
+                rs1  =    _op_[1]
+                rs1  &=   $0F
+                imm  =    _op_[2]
+                imm  <<=  8
+                tmp  =   _op_[3]
+                imm  |=  tmp
+            case SF_TYPE:
+            case SB_TYPE:
+            case S8_TYPE:
+                rs1  =    _op_[1]
+                rs1  >>=  4
+                rs2  =    _op_[1]
+                rs2  &=   $0F
+                imm  =    _op_[2]
+                imm  <<=  8
+                tmp  =   _op_[3]
+                imm  |=  tmp
+            case U7_TYPE:
+            case U6_TYPE:
+                rd   =    _op_[1]
+                rd   >>=  4
+                imm  =    _op_[2]
+                imm  <<=  8
+                tmp  =   _op_[3]
+                imm  |=  tmp
+            default:
+                println("Unknown opcode type");
+        endswitch
+
+        //instruction execution
+        //for switch I am considering rather pascal terms, so case(selection) when X: when Y: .... endcase !!!!!!!!!!!!!!
+        switch(opcode)
+
+            case OP00_NOP:
+                break
+
+
+            //R-TYPE ----------------------------------------------------------------------------
+            case OPR31_ADD:
+                tmp        =    _reg_[rs1]
+                tmp2       =    _reg_[rs2]
+                tmp       +=    tmp1
+                _reg_[rd]  =    tmp
+            case OPR32_SUB:
+                tmp        =    _reg_[rs1]
+                tmp2       =    _reg_[rs2]
+                tmp       -=    tmp1
+                _reg_[rd]  =    tmp
+            case OPR33_XOR:
+                tmp        =    _reg_[rs1]
+                tmp2       =    _reg_[rs2]
+                tmp       ^=    tmp1
+                _reg_[rd]  =    tmp
+            case OPR34_AND:
+                tmp        =    _reg_[rs1]
+                tmp2       =    _reg_[rs2]
+                tmp       &=    tmp1
+                _reg_[rd]  =    tmp
+            case OPR35_OR:
+                tmp        =    _reg_[rs1]
+                tmp2       =    _reg_[rs2]
+                tmp       |=    tmp1
+                _reg_[rd]  =    tmp
+            case OPR36_SLL:
+                imm        =    _reg_[rs2] //reuse imm here ???
+                imm        &=   $1F
+                tmp        =    _reg_[rs1]
+                tmp        =    tmp << imm
+                _reg_[rd]  =    tmp
+            case OPR37_SRL:
+                imm        =    _reg_[rs2] //reuse imm here ???
+                imm        &=   $1F
+                tmp        =    _reg_[rs1]
+                tmp        =    tmp >>> imm
+                _reg_[rd]  =    tmp
+            case OPR38_SRA:
+                imm        =    _reg_[rs2] //reuse imm here ???
+                imm        &=   $1F
+                tmp        =    _reg_[rs1]
+                tmp        =    tmp >> imm
+                _reg_[rd]  =    tmp
+            case OPR3A_CLT: //SLT
+                tmp1       =   _reg_[rs1]
+                tmp2       =   _reg_[rs2]
+                tmp        =   tmp1 < tmp2
+                _reg_[rd]  =   tmp
+            case OPR3B_CLTU: //SLTU
+                tmp1       =   _reg_[rs1]
+                tmp2       =   _reg_[rs2]
+                tmp        =   tmp1 u< tmp2
+                _reg_[rd]  =   tmp
+            case OPR3F_NOT: //pseudo
+                break;
+            case OPR3E_NEG: //pseudo
+                break;
+
+            //OP R2-TYPE // "M" extension = multiply/divide
+
+            case OPRC1_CLTZ: //pseudo
+                break;
+            case OPRC3_CNEZ: //pseudo
+                break;
+            case OPRC4_CEQZ: //pseudo
+                break;
+            case OPRC6_CGTZ: //pseudo
+                break;
+
+            case OPRDD_MOV: //pseudo //MV
+                break;
+            case OPRD0_MOVZ: //pseudo //MV
+                break;
+
+
+            //I-TYPE ----------------------------------------------------------------------------
+            case OPI11_ADDI:
+                tmp        =    _reg_[rs1]
+                tmp       +=    imm
+                _reg_[rd]  =    tmp
+            case OPI12_SUBI: //pseudo
+                tmp        =    _reg_[rs1]
+                tmp       -=    imm
+                _reg_[rd]  =    tmp
+            case OPI13_XORI:
+                tmp        =    _reg_[rs1]
+                tmp       ^=    imm
+                _reg_[rd]  =    tmp
+            case OPI14_ANDI:
+                tmp        =    _reg_[rs1]
+                tmp       &=    imm
+                _reg_[rd]  =    tmp
+            case OPI15_ORI:
+                tmp        =    _reg_[rs1]
+                tmp       |=    imm
+                _reg_[rd]  =    tmp
+            case OPI16_SLLI:
+                tmp        =    _reg_[rs1]
+                imm        &=   $1F
+                tmp      <<=    imm
+                _reg_[rd]  =    tmp
+            case OPI17_SRLI:
+                tmp        =    _reg_[rs1]
+                imm        &=   $1F
+                tmp     >>>=    imm
+                _reg_[rd]  =    tmp
+            case OPI18_SRAI:
+                tmp        =    _reg_[rs1]
+                imm        &=   $1F
+                tmp      >>=    imm
+                _reg_[rd]  =    tmp
+            case OPI1A_CLTI: //SLTI
+                tmp        =    _reg_[rs1]
+                rd         =    tmp < imm
+            case OPI1B_CLTIU: //SLTIU
+                tmp        =    _reg_[rs1]
+                rd         =    tmp u< imm
+
+            case OPI1F_LI: //pseudo
+                break;
+
+            //DATA MEMORY ACCESS ---------------------------------------------------------------
+            case OPIA1_LB:
+                //{ TU8* ptr = (TU8*)&_data_[_reg_[rs1] + imm]; _reg_[rd] = *(TS8*)ptr; }
+                tmp       = _reg_[rs1]
+                tmp      += imm
+                tmp     ub= _data[tmp]
+                imm       = tmp & $80 //reuse imm here for sign?
+                if (imm != 0)
+                  tmp      |= $FFFFFF00 //composed wiht lui tmp
+                endif
+                _reg_[rd] = tmp
+
+            //TEST
+            case OPIA2_LH:
+                //{ TU8* ptr = (TU8*)&_data_[_reg_[rs1] + imm]; _reg_[rd] = *(TS16*)ptr; }
+                tmp       = _reg_[rs1]
+                tmp      += imm
+                tmp     uh= _data[tmp]
+                imm       = tmp & $8000 //reuse imm here for sign?
+                if (imm != 0)
+                  tmp      |= $FFFF0000 //composed wiht lui tmp
+                endif
+                _reg_[rd] = tmp
+
+            //TEST
+            case OPIA4_LW:
+                //{ TU8* ptr = (TU8*)&_data_[_reg_[rs1] + imm]; _reg_[rd] = *(TS32*)ptr; }
+                tmp        = _reg_[rs1]
+                tmp       += imm
+                tmp        = _data[tmp]
+                _reg_[rd]  = tmp
+
+            case OPIAB_LBU:
+                //{ TU8* mem_ptr = (TU8*)&_data_[_reg_[rs1] + imm]; _reg_[rd] = *(TU8*)mem_ptr; }
+                tmp        = _reg_[rs1]
+                tmp       += imm
+                tmp      ub= _data[tmp]
+                _reg_[rd]  = tmp
+
+            //TEST
+            case OPIAD_LHU:
+                //{ TU8* mem_ptr = (TU8*)&_data_[_reg_[rs1] + imm]; _reg_[rd] = *(TU16*)mem_ptr; }
+                tmp        = _reg_[rs1]
+                tmp       += imm
+                tmp      uh= _data[tmp]
+                _reg_[rd]  = tmp
+
+            //TEST JALR, ECALL, BREAK -----------------------------------------------------------
+            case OPI4F_JALR:
+              //_reg_[rd] = pc + 4; core.pc = (_reg_[rs1] + (imm << LSHIFT));  //& ~0x1; in RISCV !!!!!!!!!!!!!!!!!!!!
+
+            case OPI46_XGOTO: //pseudo //JR
+
+            case OPI4C_XCALL: //pseudo //JALR
+
+            case OPI44_RET: //pseudo //RET
+
+
+            case OPIEC_FCALL: //pseudo //CALL
+
+            case OPIEE_FTAIL: //pseudo //TAIL
+
+
+            case OPIEA_LA: //pseudo
+
+            case OPIE1_LB: //pseudo
+
+            case OPIE2_LH: //pseudo
+
+            case OPIE4_LW: //pseudo
+
+
+            //S-TYPE DATA MEMORY FLUSH ---------------------------------------------------------------
+            case OPSF1_WB: //SB
+                //{ TU8* ptr = (TU8*)&_data_[_reg_[rs2] + imm]; *(TU8*)ptr = (TU8)(_reg_[rs1] & 0xFF); }
+                tmp          = _reg_[rs2]
+                tmp         += imm
+                tmp1         = _reg_[rs1]
+                tmp1        &= $FF
+                _data[tmp]  b= tmp1
+            //TEST
+            case OPSF2_WH: //SH
+                //{ TU8* ptr = (TU8*)&_data_[_reg_[rs2] + imm]; *(TU16*)ptr = (TU16)(_reg_[rs1] & 0xFFFF); }
+                tmp          = _reg_[rs2]
+                tmp         += imm
+                tmp1         = _reg_[rs1]
+                tmp1        &= $FFFF
+                _data[tmp]  h= tmp1
+            //TEST
+            case OPSF4_WW: //SW
+                //{ TU8* ptr = (TU8*)&_data_[_reg_[rs2] + imm]; *(TU32*)ptr = _reg_[rs1]; }
+                tmp          = _reg_[rs2]
+                tmp         += imm
+                tmp1         = _reg_[rs1]
+                _data[tmp]   = tmp1
+
+
+            //BRANCHES ---------------------------------------------------------------------
+            case OPSB1_BLT:
+                //if ((REGS_TYPE) _reg_[rs1] < (REGS_TYPE) _reg_[rs2]) { core.pc += imm << LSHIFT; }
+                tmp1    = _reg_[rs1]
+                tmp2    = _reg_[rs2]
+                if (tmp1 < tmp2)
+                    pc += imm << LSHIFT
+                endif
+            case OPSB2_BLE: //pseudo
+                //if ((REGS_TYPE) _reg_[rs1] <= (REGS_TYPE) _reg_[rs2]) { core.pc += imm << LSHIFT; }
+                tmp1    = _reg_[rs1]
+                tmp2    = _reg_[rs2]
+                if (tmp1 <= tmp2)
+                    pc += imm << LSHIFT
+                endif
+            case OPSB3_BNE:
+                //if (_reg_[rs1] != _reg_[rs2]) { core.pc += imm << LSHIFT; }
+                tmp1    = _reg_[rs1]
+                tmp2    = _reg_[rs2]
+                if (tmp1 != tmp2)
+                    pc += imm << LSHIFT
+                endif
+            case OPSB4_BEQ:
+                //if (_reg_[rs1] == _reg_[rs2]) { core.pc += imm << LSHIFT; }
+                tmp1    = _reg_[rs1]
+                tmp2    = _reg_[rs2]
+                if (tmp1 == tmp2)
+                    pc += imm << LSHIFT
+                endif
+            case OPSB5_BGE:
+                //if ((REGS_TYPE) _reg_[rs1] >= (REGS_TYPE) _reg_[rs2]) { core.pc += imm << LSHIFT; }
+                tmp1    = _reg_[rs1]
+                tmp2    = _reg_[rs2]
+                if (tmp1 >= tmp2)
+                    pc += imm << LSHIFT
+                endif
+            case OPSB6_BGT: //pseudo
+                //if ((REGS_TYPE) _reg_[rs1] > (REGS_TYPE) _reg_[rs2]) { core.pc += imm << LSHIFT; }
+                tmp1    = _reg_[rs1]
+                tmp2    = _reg_[rs2]
+                if (tmp1 > tmp2)
+                    pc += imm << LSHIFT
+                endif
+
+            case OPSBA_BLTU:
+                //if ((REGU_TYPE) _reg_[rs1] < (REGU_TYPE) _reg_[rs2]) { core.pc += imm << LSHIFT; }
+                tmp1   u= _reg_[rs1]
+                tmp2   u= _reg_[rs2]
+                if (tmp1 < tmp2)
+                    pc += imm << LSHIFT
+                endif
+            case OPSBB_BLEU: //pseudo
+                //if ((REGU_TYPE) _reg_[rs1] <= (REGU_TYPE) _reg_[rs2]) { core.pc += imm << LSHIFT; }
+                tmp1   u= _reg_[rs1]
+                tmp2   u= _reg_[rs2]
+                if (tmp1 <= tmp2)
+                    pc += imm << LSHIFT
+                endif
+            case OPSBC_BGEU:
+                //if ((REGU_TYPE) _reg_[rs1] >= (REGU_TYPE) _reg_[rs2]) { core.pc += imm << LSHIFT; }
+                tmp1   u= _reg_[rs1]
+                tmp2   u= _reg_[rs2]
+                if (tmp1 >= tmp2)
+                    pc += imm << LSHIFT
+                endif
+            case OPSBD_BGTU: //pseudo
+                //if ((REGU_TYPE) _reg_[rs1] > (REGU_TYPE) _reg_[rs2]) { core.pc += imm << LSHIFT; }
+                tmp1   u= _reg_[rs1]
+                tmp2   u= _reg_[rs2]
+                if (tmp1 > tmp2)
+                    pc += imm << LSHIFT
+                endif
+
+            case OPS81_BLTZ: //pseudo
+                //if ((REGS_TYPE) _reg_[rs1] < 0) { core.pc += imm << LSHIFT; }
+                tmp1    = _reg_[rs1]
+                if (tmp1 < 0)
+                    pc += imm << LSHIFT
+                endif
+            case OPS82_BLEZ: //pseudo
+                //if ((REGS_TYPE) _reg_[rs1] <= 0) { core.pc += imm << LSHIFT; }
+                tmp1    = _reg_[rs1]
+                if (tmp1 <= 0)
+                    pc += imm << LSHIFT
+                endif
+            case OPS83_BNEZ: //pseudo
+                //if ((REGS_TYPE) _reg_[rs1] != 0) { core.pc += imm << LSHIFT; }
+                tmp1    = _reg_[rs1]
+                if (tmp1 != 0)
+                    pc += imm << LSHIFT
+                endif
+            case OPS84_BEQZ: //pseudo
+                //if ((REGS_TYPE) _reg_[rs1] == 0) { core.pc += imm << LSHIFT; }
+                tmp1    = _reg_[rs1]
+                if (tmp1 == 0)
+                    pc += imm << LSHIFT
+                endif
+            case OPS85_BGEZ: //pseudo
+                //if ((REGS_TYPE) _reg_[rs1] >= 0) { core.pc += imm << LSHIFT; }
+                tmp1    = _reg_[rs1]
+                if (tmp1 >= 0)
+                    pc += imm << LSHIFT
+                endif
+            case OPS86_BGTZ: //pseudo
+                //if ((REGS_TYPE) _reg_[rs1] > 0) { core.pc += imm << LSHIFT; }
+                tmp1    = _reg_[rs1]
+                if (tmp1 > 0)
+                    pc += imm << LSHIFT
+                endif
+
+            // LUI? AUIPC, JAL ---------------------------------------------------------------
+            case OPU71_LUI:
+              //_reg_[rd] = (REGU_TYPE) (imm << IMM_BITS);
+
+            case OPU7A_AUIPC:
+              //_reg_[rd] = ((REGU_TYPE) (imm << IMM_BITS)) + pc;
+
+            case OPU7F_JAL:
+              //_reg_[rd] = pc + 4; core.pc += imm << LSHIFT; //& ~0x1; in RISCV !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+            case OPU66_GOTO: //pseudo
+              break;
+
+            case OPU6C_CALL: //pseudo
+              break;
+
+
+        endswitch
+
+        pc        +=  4
+        _core_.pc  =  pc
+
+        print("PC: "); println(itoh(pc)); //TODO DEBUG
+
+    again
+
+endfunc

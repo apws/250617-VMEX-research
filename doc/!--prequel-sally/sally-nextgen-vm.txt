@@ -1,0 +1,267 @@
+DEBUG
+=======
+OK ArduinoZERO in vscode+arduinoext
+   !!! BEST/FASTEST DEBUGIING !!!
+
+(OK) XplainMini in atmelstudio (other boards with debugger dont import project well !!!, XplainMini serial baud max 57600 !!!)
+   !!! XplainedMini BEST/FASTEST for build/debugging in AtmelStudio7 ??? NO - code upload by debugWire is SLOW AS HELL !!!
+   !!! requires max serial baud 57600, acceptable everywhere though, OK (except infineon xmc2go xmc1100 !!!
+
+
+(well, may be, we finally REALIZE, that for tiny 8-bit AVRs is enough to EMULATE 6502 at slow speed,
+ while running this on faster 32bit ARM/RV32 is also enough - to have FULL VM compatible accros all chips,
+ simply to STAY IN 6502 !!! - with possibility of MADS PASCAL/ASM + EFFECTUS ACTION! ????)
+
+(well, 6502emu REALLY IS REALLY SLOW!!! on 32bit Cortex-M0, so will be better to have SALLY !!!, BUT, we can make it 
+TINY-BASIC-COMPATIBLE, while ENHANCED with our RPN expressions and labels etc... so TWO-WAY ??? NO ???)
+
+(we want that RUNTIME will fit into 6k binary !!! or 12k binary ???)
+
+
+
+Insipred and modified VM by "BleuLlama" TinyBasicPlus (TBP) - heavy refactorings to understand code !!!
+https://github.com/BleuLlama/TinyBasicPlus
+
+More inspiration for portability by "slaviajero" TinybasicArduino (TBA) - ALSO refactorings and split parts into defines !!!
+(Possibility to develope SALLY VM in desktop C with regular debugger !!! - re TBA usage of "::" - minimum references to CPP !!!)
+(TinybasicArduino/TinybasicArduino.ino is an exact copy of basic.c,
+nothing needs to be added or adapted except the defs at the beginning of the code.)
+https://github.com/slviajero/tinybasic
+https://github.com/slviajero/tinybasic/wiki
+
+
+
+Simple Assembled Lines Language VM - SALLY interpreter (C-subset)
+==================================================================
+
+- (JavaFX) destop translates each row from text to binary format and sends it over custom (JavaFX) terminal
+- its posible to generate C-HEX of program and #include it in sketch to flash programs with interpreter
+- SALLY accepts binary line and stores it into program (RAM) OR executes it directly (renumbering support)
+- DESKTOP works as "Termite" with handling INPUTS (it remembers entered lines and brings them to edit !!!)
+- Compiler/SALLY uses line numbers (binary TU16) and binary tokens (binary TU16) to encode things
+- BUT line numbers are not used for GOTOs, we use explicit LABEL tokens, so SYMBOL TABLE
+- Compilation encodes PROGRAM to binary form and appends binary symbol/link table
+- expressions are written in RPN logic !!!
+- (for)/while/(repeat)/switch/func are based on labels tokens too
+- user functions with arguments passed to stack (calc stack only)
+- TList,TRecord of TU8,TS8,TU16,TS16,TString,TBool
+- DESKTOP save/load implemented by "listing" and "entering" through serial terminal (as by manually) re Termite !!!
+- DESKTOP transpiling from java-like syntax possible
+- DESKTOP emulation of SALLY VM + peripherals
+
+
+LIBRARIES - CircuitPython approach
+======================================
+ - while implemented using arduino for arduino boards, libraries access will more mimic CircuitPython API
+ - MODULAR composition of runtime combining SALLY-VM + LIBRARIES (only those needed for runtime)
+ - MODULAR impelementations of SALLY-VM DEBUGGER features (linked only for debugging, stripped for bare runtime)
+ - MODULAR implementation of SALLY-VM TEST feature to proove consistent implementation of VM on ALL platforms
+ - MINIMAL SALLY-VM runtime will not allow TEST, EDIT and DEBUG features, only EXEC of LINKED program !!!
+
+ - CircuitPython approach more appropriate for NATIVE ARDUINO C/C++ code for LARGER 32bit systems (more CP LIB features implemented)
+ - deep unit TESTING of libraries
+
+
+LINES = implicit/stealth labels, scanned for labels and defs at execution
+=====================================================================
+ - we use program lines, but we dont store TEXT, we store binary tokens - in fact, we have VM with high-level C instructions !!!
+ - lines with LABEL or VAR or FUNC definitions (or LOOPS as [for NO!!], while, do, ... we will see which, or SWITCH, or IF ELSE ...)
+   will be marked as SYMBOL-lines and exact line numbers will be placed into SYMBOL TABLE (just after program binary)
+ - we will persist line numbers in target memory to support LISTING and line EDITING (may be stripped in RUNTIME-only version?)
+ - in case LOCAL VAR SYMBOLs are declared, those will be ALLOCATED on STACK during FUNCTION CALL, together with arguments
+ - in case of GLOBAL VAR SYMBOLs (static) those will be PREALLOCATED in RAM segment (during runtime, RAM will contain only GLOBALS + STACK)
+
+VARIABLES, LOCALS support
+============================
+ -- this will not be easy having the limits !!!!!!!!!
+ -- we need to INVENT simple way to achieve good behavior !!!!!!!!!
+
+
+
+SALLY - split between desktop development and device runtime
+================================================================
+ -- desktop IDE compiles/tokenizes and communicates with device
+ -- runtime VM is as-fast-as-possible, interpreting tokenized code with symbols (high-level VM)
+ -- runtime supports basic debugging support during runtime (own implementation od simple debug protocol)
+ -- on larger MCU, having lots of flash, sally CAN decompile tokens interactivelly (list, debug) ??? (default listing/entering of HEX tokens)
+ -- RAM memory is defined per-APP statically for several BLOCKS to have checked areas for interpreter
+    (in case more room is needed, it can be set based on memory errors in runtime testing)
+ -- while developing on larger MCU, final app-code will be placed as hex into sketch to flash
+ -- sally expressions will interpret RPN stack-calculator for pure functions
+ -- 
+
+
+
+SALLY - java-like (c-like ??!! java types BAD) syntax, simplified VM
+======================================================================
+labels <label>:
+types?: void, TBool, TS8, TU8, TS16, TU16, TS32, TU32, TChar, TString + arrays (+records (+lists (+filesystem)))
+keywords: if else (do) while break continue final(const) static volatile enum boolean void return typedef (no "for", no "swtich/case/default")
+(keyord "class" only for declaring new alias types (so aka typedef) or definition of records/structs of data)
+ternary operator (cond) ? true : false;
+comments: // (regular)  /* */ (inline only) /// (special-directive-preprocessor ??)
+(special comment /// to encode preprocessor directives (decompilation to more files, structure of source code, extensions, ANSI-C etc)
+(function prefixes as in TBA refactoring, structuring flat runtime code to more source files and subdirs, ...analysis, readability)
+!!! NO FOR keyword !!! easily done by (do) while ... !!! NO SWITCH/CASE !!! easily doable by if else if ... !!!
+(no CONST keyword in java - see: https://www.theserverside.com/video/Why-we-use-static-final-in-Java-for-constants)
+(so, more PicoC-like or possible C# source-compatibility, capable of mapping type system similary???)
+PicoC is SLOW C interpreter, no tokenisation, no VM, too much complex, tries full ANSI C features, we DONT need this !!!
+
+RPN expressions: in first version, and internally in SALLY VM, expressions are STORED as RPN (decompiled to expressions in debugger)
+(expression parser is possible and doable on DESKTOP compiler side)
+
+REPL commands: list, call, run, debug, trace, save, load
+
+==> simplified C-like syntax, easy tokenization for SALLY, easy transpilation to ANSI C !!!!!!!!!! (PicoC is in fact pure ANSI C, too much !!)
+profiles SALLY-16, SALLY-32, SALLY-REC, SALLY-TAB(dynamic lists/tables), SALLY-FS(filesystem)
+??? 
+
+
+
+
+SALLY - unifying Arduino and CircuitPython ??
+=================================================
+ -- SALLY VM as portable arduino sketch with modular defines
+ -- SALLY VM as circuitpython (native c) module ??? ISNT THIS STUPID ??? arduino supported everywhere as micropython/circuitpython and MORE !!!
+ -- SALLY VM plaform API defined by CircuitPython core/libs (reimplemented on arduino ??)
+ -- SALLY VM circuitpython reimplementation of Arduino platform API (??!!)
+
+
+SALLY - separated tokenizations of VM interpreter
+=========================================================
+ -- declration of local block scope {}
+ -- global typed definition with TYPE, DESCRIPTOR (typedef based)
+ -- global variable definition with TYPE, NAME (globals are SallyTask class members in java ???)
+ -- function declaration with TYPE, NAME, ARGS (recursivelly repeats this list)
+ -- local variable definition with TYPE, NAME
+ -- local variable assignment from expression with function calls (coded in RPN - COMPILER GENERATED)
+ -- flow control commands if{},else{},do{},while{},break,continue,label: (maybe only calling to implicit local functions?? - COMPILER GENERATED)
+
+(library calls are done by global external functions)
+
+
+SALLY - LINE ORIENTED VM INTERPRETER + COMPILER (both written/designed in JAVA - first as desktop VM emulator !!!)
+========================================================================================================================
+ -- SALLY code source compatible to C-subset !!! (in fact, missing "for", missing "switch/case", working break/continue/goto <label>)
+ -- SALLY types based on C typedefs !!! - source compatible to C
+ -- SALLY imports/includes - subfolders/structure, working as #include !!! needs FILESYSTEM SUPPORT, OPTIONAL !!!
+ -- SALLY IS NOT object oriented - imports used to include "prefixed" functions only !!! to structure source !!! (follows structure of TBA)
+ -- SALLY compiler enforces LINE NUMBERS into compiled code (used for DEBUG, REPL, LIST, EDIT and to BUILD SYMBOL TABLES)
+ -- SALLY allows max 255 lines of code per function !!! ??? SALLY compiler allows to "compress" nonlabeled blocks to "single-line" for production??
+ -- SALLY allows max 65535 lines per program (including imports/includes) = 16bit line number + 8bit line length
+          (possibility to EXTEND THIS for 16bit+8bit+8bit extension - 32bit line descriptors, having 24bit line numbers) 
+ -- SALLY persists symbol table symbols in flash (if memory allows) to support ALWAYS DEBUG/EDIT production code !!!
+          (if symbols cant be persisted, then is always possible to "attach" built firmware symbols in desktop debugger (java))
+ -- SALLY allows to declare max 255 types (typedefs), including builtins !!!
+          (see https://en.wikipedia.org/wiki/Primitive_wrapper_class_in_Java - in desktop compiler, such wrappers are base class of SALLY primitives)
+          (JAVA is BAD for this, we must follow rather C-like typedefs OR, try to make it C#-source compatible and write everything in C# ???)
+ -- SALLY supports C-like (NOT JAVA) labels with goto/break/continue (see https://www.tutorialspoint.com/How-to-use-labels-in-Java-code)
+ -- SALLY COMPILER is WRITTEN in SALLY ??!! 
+          (https://www.baeldung.com/java-initialization - we can use default java primitives regulary, with possibility to "recode" to types ??)
+          (... HERE will be difficulty of source compatibility !!! - class extends of wrapper is not the same as typedef !!!)
+          (... so, provide possibility to "recode" SALLY source between subset of JAVA and subset of C ??? - superb portability possibilities ???)
+          (... in fact, OKAY, java-like source of SALLY can be FORCED to use "new <SallyType>(value)" as initializer - will this be java-runnable? no)
+          (... well, this is something NOT POSSIBLE in java ... so, well, use strict TYPESCRIPT, NO ???)
+          !!! OKAY - its possible to write code in vscode using C/CPP env and refactorings and RECODE/TRANSPILE (type erasure) source into JAVA
+              to change all typedefed types down to java primitives byte/short/int/long (they are all signed) !!!
+          !!! OR to have fixed VM simulator implemented in JAVA only with EXTENSIONS implemented in JAVA also !!!
+          !!! SOLVE this - real C typedefs are not possible in JAVA nor TYPESCRIPT (really ??) !!!
+          !!! KOTLIN ???
+          !!! NO, it seems we will be forced to use C-subset-syntax in vscode !!!
+          !!! C# still possibility instead of JAVA with stronger type system with operator overloads to mimic C typedefs ???
+
+
+SALLY - forced formatting !!! (example by SALLY and TBA sources)
+=====================================================================
+ -- forced spaces around assignment/shift operators and relation oprators, around all operators in fact ???
+ -- forced spaces aroundd keywords
+ -- forced block delimiters on indentation level
+    (all this observed by refactorings/cleanups of TBA/TBP code !!! PRIMARY GOAL IS STRONGEST READABILITY OF CODE !!! ALWAYS !!!
+ 
+
+SALLY - idea of single "repeat" keyword instead of "for", "do", "while"
+=============================================================================
+ -- quite FINE (in combination with break/continue), but does not comply with C-syntax subset !!! => bad experience in vscode ???
+ -- on the contrary, may be simple adaptation possible ?? ("#define repeat" as empty possible before plain {} blocks ???)
+
+
+SALLY - vscode refactorings - source = *.CXX
+===================================================
+ -- see bench.cxx to see how coding for C-like SALLY is compatible to C/CPP/JAVA
+ -- ???!!! SO NO GOOD: java src-compat possible when using only java signed types byte/short/int/long/char + String
+ -- !!! BETTER C src-compat possible using typedefs of T* SALLY Types !!!
+ -- !!! ALSO C# is capable in type system to mimic typedefs having overloadable operators etc...
+        (!!! VERY easy typedef renames by "using NEWTYPE = OLDTYPE")
+
+
+SALLY - as a education system about programming languages
+=============================================================
+ -- tiny c-like language, more "java-like by simplification" not full ANSI C, never..., simplified (no for loops, no switch)
+ -- tiny compiler for line-oriented FAST/DEBUGGABLE virtual machine
+ -- resembling learning resources TBA/TBP(SALLY) - arduino source code, refactored by mixworx and made compatible
+    (initial test compiler will compile BASIC-similar benchmarks into SALLY-VM (future of QUARK-FX engine)
+ -- see history of BASIC ... https://en.wikipedia.org/wiki/BASIC_interpreter
+
+SALLY - optional embedded VM assembler/disassembler ??
+==========================================================
+  -- sure, only for target VM ... ??? its question
+
+
+SALLY - debugging, tracing
+==============================
+ -- run [<line>|<label>|<function>], list [[<line>[,<>line]|<function>], trace [<line>|<label>|function]
+ -- see PicoC ESP32 wifi-web debugger, ya, its possible !!!!!!!!
+    !! but PicoC example is HARD TO FOLLOW, boardel jako krava !!!!!!!! navic PicoC je pomale a prilis peclive kopirujici ANSI C !!!!
+
+SALLY - javafx OR net-maui IDE (compiler, monitor, simulator) + vscode editor (all multiplatform)
+=================================================================================================
+ -- vscode as PERFECT editor for C-refactorings, syntax coloring, easily configurable, everywhere
+ -- what about net-maui C# insted of javafx finally?? SALLY COULD be designed C#-source compatible, java is unfortunatelly lacking here !!!
+
+SALLY - line numbers encoding 4 byte 16bit number + 8bit forward + 8bit backward 
+====================================================================================
+ -- ONLY IDEA how to speedup relative branches/loops by searching for lines
+ -- better to have all loops stacked with native ADDRESS to line
+ -- together with compiled symbol table of function locations
+ -- YES, we need in fact COMPILER to SIMPLE FAST/PORTABLE VM with telemetry/debug support
+
+SALLY - entire TinyBASIC idea used again ????
+=============================================================
+ -- https://en.wikipedia.org/wiki/Tiny_BASIC
+ -- The alternative method was to have an experienced professional do the overall design
+    and then outline an implementation strategy. Knowledgeable amateurs would implement
+    the design for a variety of computer systems. Warren predicted this strategy
+    would be continued and expanded.
+    (applied to implementing SALLY VM out of Arduino environment for directly supporting chips)
+ -- !!! features comparison for SALLY specification: https://en.wikipedia.org/wiki/Atari_BASIC###
+
+SALLY - enforced language specs by developers experience
+============================================================
+ -- https://thedeepbluecpp.blogspot.com/2014/
+ -- https://thedeepbluecpp.blogspot.com/2017/08/12-always-keep-correctness-in-mind.html
+ -- so more than PicoC interpreter to follow SmallC-compiler into FAST VM appraoch ???
+
+
+
+SALLY - implements cooperative TASKS
+============================================
+ -- ??? questionable, too much for now ???
+ -- each TASK has its own STACK with predeclared SIZE
+ -- every variable reference resides on STACK and is referenced by SYMBOL TABLE
+ -- java-src-compatibility based on "class" derived from "SallyTask" (class used also for "typedef" and "struct")
+
+
+SALLY - compiler/vm written in java-c-recoded-subset 
+=======================================================
+ - dont use for{}, dont use switch{}, use only while{}/break/continue/labels (RECODE "continue label" into C "goto label")
+ - use only functions with LIB_XXXX_CamelCase defined in single program class
+ - avoid use of String type
+ - write simple java RECODER from JAVA to C for such "patterns":
+ - RECODE types byte, short, int, long, boolean, char (use only 8bit/ASCII everywhere !!) to TS8, TS16, TS32, TS64, TBool, TChar + their arrays
+ - RECODE arrays declaration - int buf[] = new int[50]; to C: TS32 buf[50]; 
+ - C99C11 VLA support possible ??? (RECODER MUST FOLLOW size variable, must recode ARR.lenght to sizeof(ARR))
+ - .length: https://www.javatpoint.com/how-to-find-array-length-in-java)
+ - ?? HEAP allocated in c ?? int buf[] = new int[50]{}; (new keyword with primitive type, size and empty initializer to ZERO array)
+ 
+
+

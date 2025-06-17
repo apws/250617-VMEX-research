@@ -1,0 +1,69 @@
+zaklad:
+----------------------------------------------------------------------------------------------
+
+APLIKACE obsahuje UI a DB sekce
+
+UI obsahuje sadu PANELS, sadu globalnich VIEWS, sadu globalnich RESOURCES,
+sadu globalnich COMMANDS, mapu TRIGGERS, mapu CONTROLS
+
+Vsechny prvky aplikace maji sve NAME, pres ktere jsou referencovany
+
+PANELY, VIEWS, RESOURCES a TRIGGERS mohou byt definovany
+i v externim referencovanem souboru
+
+PANELY, VIEWS, STATES, EVENTS,
+
+
+PANELY dane velikosti obsahuji VIEWS dane velikosti
+a ty mohou mit konecny pocet vizualnich STATES
+
+STATE je 24bpp PNG/JPG image dane velikosti ulozeny v binarnim souboru
+
+PANELY mohou byt take autonomni vizualni jednotky s pouze svymi
+VIEWS a RESORCES obsahujicimi STATES vsech VIEWS PANELU
+
+VIEWS take obsahuji sadu EVENTS kterymi mohou reagovat na aplikaci
+definovane TRIGGERS a ktere se mapuji na COMMANDS sveho panelu
+
+COMMANDS jsou posilany standarnim protokolem do aplikacni DB/EX vrstvy,
+ktera zaridi patricne updaty jednotlivych PANELU/VIEWS/STATES
+
+
+navrh muze probihat ve specialnich custom controlech v expression studiu / blendu
+
+graficke RESOURCES budou konvertovany do binarnich indexovanych dat, tak aby byly optimalne
+ladovatelne do immutabilnich Image obejktu na cilove platforme
+(terminologie J2ME, ta je nejomezenejsi) veskere renderovani grafiku bude probihat stylem
+BITBLT techto immutabilnich image resourcu do mutovatelnych offscreen image predstavujicich
+PANELY, ktere se budou v paint-metode s pomoci clip-regionu renderovat do Canvas.image grafiky
+
+RESOURCES pro aplikaci budou vygenerovany primarne v modulu "1" = zakladni/nejmensi velikost
+a soucasne take z grafickeho bitmap/vektor designeru do nasobnych modulu "2/3/4" napriklad,
+tj. zvetsene 2x 3x 4x ... pro moznost renderovat cele PANELY takto skalovane na displejich
+s vetsim rozlisenim, resp. na desktopu - pokud se aplikace pokusi o zoom na modul, jehoz
+resources nebudou nalezeny, muze se sama pokusit za behu VYGENEROVAT takove resources prostym
+XY nasobnym zvetsenim puvodni grafiky, kdy pak sice nebude grafika patricne "hezka", ale dojde
+k prostemu bitmapovemu zvetseni, coz neni pro pouzitelnost problem
+
+kazdy panel pritom bude mit nastavitelny aktualni stav zoomu, a bude tomu odpovidat take jeho
+mutable offscreen image buffer - vsechny VIEWS renderovane v ramci tohoto panelu budou potom
+za teto situace nacitat a renderovat resources do nasobne zvetseneho image bufferu, samozrejme
+nacitane z patricne zoomovaneho resources souboru - vsechno v aplikaci zustane pri starem,
+pouze runtime interne vynasobi vsechny souradnice umisteni a velikosti views
+
+VIEWS pritom budou renderovatelne take jako XY matice/pole, kde kazda bunka matice bude moci
+byt uvedena do jednoho ze stavu prislusneho diskretniho VIEW a bude takto mozne implementovat
+napriklad bitmapove zalozena textova pole a oblasti pro editaci textovych udaju ve spojeni
+s patricnymi grafickymi resources predstavujicimi bitmapove fonty (stejne jako jakoukoliv
+jinou grafiku) - to bude znamenat pouze pevne definovanou kombinaci barev por pozadi a pismo,
+pokud se nepouzije jina kopie pole resources, ale to je akceptovatelne omezeni pro tyto pripady
+FONTY proste nejsou nicim vyjimecne, vse je specificky pripravene pro danou omezenou aplikaci
+a orientovane na maximalni vykon i v prostredi J2ME, kde je nejvice omezeni a renderovani
+binarnich image views do image PANELu je rychlejsi nez jakekoliv jine graficke operace.
+
+Mohla by existovat moznost vkladat do sebe neomezene VIEWS jako matrjosky, s tim ze se budou
+renderovat do offscreen bufferu od spodniho hladiny po vrchni, bez nejakych optimalizaci,
+za cennu mirneho snizeni vykonu pro zbytecne prekreslovane oblasti - naopak pokud bude mozne
+se nejak shodnout na spolecne podpore alpha blendingu tak ani v pripade SUB-VIEWS by to nebylo
+nakonec zbytecne (alpha blending pro prekryvani PANELU by naopak byl vylozene fajn nekdy)
+

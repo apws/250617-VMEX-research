@@ -1,0 +1,89 @@
+
+
+--- #dsfsfsdfsdfsdfs
+
+# feature = in fact interface
+feat: Tasking
+def:
+  - Task(string name)
+  - Next()
+
+
+# type / struct / class definition
+type: MyRecord ( Tasking, Enumerable ) # implements
+def:
+  - byte n
+  - string FirstName[20], LastName[20]
+  - byte status
+  
+# function / method definition
+func: u8 PokusCalc( u8 test, s8 pokus, bool try, string name )
+def:
+  - s16 i, j, k; u8 df, tfg
+  - u8 st[10], b[20], c[]
+  -
+  - i=$0F; j=0xEA
+  - a=[1, 2, 5, 14]; b[0]=32
+  - c <= 14; c <= [ 25, 14 ]
+  -
+  - # cdfgdgdgdgd gd gdgdgdg dgd
+  - # dssfsf ssfsdf sf sfsffsfsf sfsdfsdfsf
+  - i++; j++
+  - i=+3; j=+7
+  -
+  if: i>5
+  # sdfsdfsdfsdfsdfsdfsfsdf
+  then:
+    - dsf
+    - sdfsdf
+    - sdfsdf
+  else:
+    - sdf
+    - sdfsdf
+  
+  while: j>0
+  # sdfsdfsdfsdfsdfsdfsfsdf
+  do:
+    - sdf
+    - sdfsd
+    - sdfs
+    - j--
+  # sdsdfs  sdf sdfsdf 
+  do:
+  # sdfsdfsdfsdfsdfsdfsfsdf  
+    - dssdf
+    - sdfsdf
+    - sdf
+    - j--
+  until: j==0
+  # dsssssssssdsd sd sd sd sd 
+  for: i=0, i++, i<10
+  # sdfsdfsdfsdfsdfsdfsfsdf  
+  do:
+    - sdf
+    - sdf
+    - sdf
+  -
+  - c <<< PokusCalc: i, j, true, "sdfsdfsdf"
+  - 
+  foreach: c
+  # sdfsdfsdfsdfsdfsdfsfsdf  
+  do:
+    - asdasd
+    - asdasdas
+  -
+  # asdfdf sdsdf
+  -
+  switch: j
+  # sdfsdfsdfsdfsdfsdfsfsdf  
+  case: 2
+    - sdfsd
+    - sdfsdff
+  case: 4
+  case: 5
+    - asasd
+  default:
+    - xx
+  -
+  -
+  

@@ -1,0 +1,122 @@
+
+ISA definition
+=======================
+
+32bit where it has all things encoded in single 32bit word - exact size of instructions !!!
+(external library instructions/traps will be DEFINED/DECLARED to be short 32bit always)
+
+for smallest 8bit implementations, there will be 256/65536 entries LUT compiled and referenced from
+following compressed code using only byte/word indexes sequence
+
+also smallest 8bit implementations having small internal RAM, there will be VERY limited count of cores,
+possibly even SINGLE or FEW, having declared FRAMES as 32/64/128/256/512/1024/2048/4096 bytes per core
+
+on larger 32bit (Coretex-Mx) having 128k+ flash and 16k+ rams, there will be more headroom for core data,
+plus there will be possibility to have external CODE flash and DATA (nv)sram through (Q)SPI ...
+
+========================================================================
+=== MOST IMPORTANT IS STRICT COMPATIBILTIY ON ALL VM IMPLEMENTATIONS ===
+========================================================================
+
+
+ISA 32bit for 8/16bit data = RX16E = bitter16
+==============================================
+    .... .... .... .... .... .... .... ....
+0-3:  00oo oooo 0ddd 0sss iiii iiii iiii iiii  (64    ALU# ... Immediate = ALU byte, word, signed, unsigned...)
+4-7:  01oo oooo 0ddd 0sss 0000 0sss 0000 0000  (64    ALU ... Register = ALU ...)
+
+8:
+9:
+
+A0: 1010 o000 0ddd 0sss oaaa aaaa aaaa aaaa  (4+    PLOAD ... A-ddress L-oad) (program)
+A1: 1010 o001 0ddd 0sss oaaa aaaa aaaa aaaa  (4+    PSAVE ... A-ddress S-ave
+A2: 1010 o010 0ddd 0sss oooo aaaa aaaa aaaa  (32+   RLOAD ... A-ddress L-oad) (regstk)
+A3: 1010 o011 0ddd 0sss oooo aaaa aaaa aaaa  (32+   RSAVE ... A-ddress S-ave
+A4: 1010 o100 0ddd 0sss oaaa aaaa aaaa aaaa  (4+    MLOAD ... A-ddress L-oad) (spi memory/nvsram)
+A5: 1010 o101 0ddd 0sss oaaa aaaa aaaa aaaa  (4+    MSAVE ... A-ddress S-ave
+A6: 1010 o110 0ddd 0sss oaaa aaaa aaaa aaaa  (4+    FLOAD ... A-ddress L-oad) (spi flash/tables)
+A7: 1010 o111 0ddd 0sss oaaa aaaa aaaa aaaa  (4+    FSAVE ... A-ddress S-ave
+
+AA: 1010 1010                                       REGSET 0,1,2,3,4,5,6,7  register set switch / register window / r0-r7 window shifting ???
+
+
+Bn0-9: 1011 oooo 0ddd 0sss 00aa aaaa aaaa aaaa  (16+   B?? ... B-ranch = test&branch)
+BA: 1011 1010 0ddd 0sss 00aa aaaa aaaa aaaa  (1+    BRA ... B-ranch A-llways = bra/jump)
+
+C1: 1100 0001 0ddd 0sss ooaa aaaa aaaa aaaa  (3+    LINK ... C-all Li-nk Single, optionally push two regs)
+C1: 1100 0001 0ddd 0sss 1111 1111 1111 1111  (1+    UNLINK ... C-all Li-nk ... UNLINK, optionally pull two regs)
+CA: 1100 1010 0ddd 0sss ooaa aaaa aaaa aaaa  (3+    CALL ... CA-ll with push LR, optionally push two regs)
+CA: 1100 1010 0ddd 0sss 1111 1111 1111 1111  (1+    RETURN ... CA-ll ... RETURN, optionall pull two regs)
+CF: 1100 1111 tttt tttt tttt tttt tttt tttt  (1+t   TRAP ... Trap(C-all F-ar) - library trap call)
+CF: 1100 1111 1111 1111 1111 1111 1111 1111  (1+t   ??? UNTRAP ... Trap(C-all F-ar) - library trap return)
+C5: 1100 0101 0ddd 0sss ooaa aaaa aaaa aaaa  (3+    SYSTEM ... Call System/Start - possible compressed execution sequence)
+
+E:  1110 ?rrr ?rrr ?rrr ?rrr ?rrr ?rrr ?rrr  (<127> ENTRY ...  Stack push(E-ntry) (r0 always, r1-r7))   (regstk)
+F:  1111 ?rrr ?rrr ?rrr ?rrr ?rrr ?rrr ?rrr  (<127> FINISH ... Stack pull(F-inish) (r0 always, r1-r7))  (regstk)
+
+Dn  1101 oooo xxxx xxxx xxxx xxxx xxxx xxxx  (16+x  DEBUG info(D-ebug))
+
+
+general purpose R0-R7 registers (=8x16bit = 16BYTE)
+special PC
+special SP
+support variables
+ TOTAL 32BYTE IMPLEMENTATION + 32BYTE MINIMAL REG-MEM-STK (= 64B, 128B, 256B, 512B, 1024B, 2048B ...)
+
+
+(possible address immediate -2bits as aligned to DWORDS ??, in fact in C we read PROGMEM by DWORDS always everywhere
+= slowest on 8bit, faster on 16 bit, fastest on 32bit)
+
+R,I: ALU {aop|lop} on 3/2 registers aka: dest = srcA op srcB / dest = srcA op #immediate
+A: TEST {rop aka: 0,!0,=,<,<=,>,>=} label
+A: GOTO label
+A: CALL function
+T: TRAP {library:function}
+T: BREAK, TRACE, DEBUG
+
+(# for immediate operand, +/- for signed operands ??)
+(assembler will rather be written in INFIX algebraic notation than instructions - aka "r1 = r3 + r5" ... etc)
+(only relative addressing used, relative to PC or ORIGIN=0 of code, strictly relocatable)
+
+R,I:
+=====
+0 clr
++ add 
+- sub
+* mul
+/ div
+% mod 
+
+<< lsl, asl
+>> lsr, asr
+
+& and
+| or
+^ xor
+~ not
+
+0,!0,=,<,<=,>,>= cmp
+
+
+A:
+====
+ -- lui - NE !!! mame 16bit PC !!!
+ -- auipc - NE !!! mame 16bit PC !!!
+label reg, 0 .. stores current PC into reg (+/- relative jump)
+
+A:
+=====
+test
+goto
+load
+save
+push
+pull
+call
+
+T:
+=====
+trap
+break
+debug
+trace

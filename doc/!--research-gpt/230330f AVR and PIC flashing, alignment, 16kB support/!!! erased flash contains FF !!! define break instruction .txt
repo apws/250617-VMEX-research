@@ -1,0 +1,18 @@
+
+will be needed to edit flash by:
+
+  a) erasing entire MCU memory
+  b) editing/entering code/data into flash
+      a) manually by W edits, A asm
+      b) loading from terminal as M list (W prefixed)
+      c) listing of memory by M (copy/paste on terminal)
+      d) listing of memory by D (copy/paste on terminal)
+      e) ERASING entire memory
+      f) re-entering already stored CODE by "pasting to terminal"
+         (eighter as binary data "MW" or by new "A" paste
+
+
+  This way will be possible to use terminal/clipboard as temporary storage...
+  (without need of large (nonexisting) RAM buffers on device ...)
+
+

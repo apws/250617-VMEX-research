@@ -1,0 +1,69 @@
+
+//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays
+//typescript typed array views into byte buffer memory
+
+let buf = new ArrayBuffer(4096);
+let mem = new DataView(buf);
+let memb = new Uint8Array(buf);
+
+mem.setUint8(0, 0x20);
+mem.setUint8(1, 0x40);
+mem.setUint16(2, 0xF000);
+
+memb[4] = 0x01|0;
+
+let m1 = mem.getUint8(0);
+let m2 = mem.getUint8(1)
+let m3 = mem.getUint16(2);
+let m4 = mem.getUint32(0);
+
+let m5 = mem.getUint8(4);
+let m6 = mem.getUint32(4);
+
+alert(mem.byteLength);
+alert(`word 0:  ${m1.toString(16)}  ${m2.toString(16)}  ${m3.toString(16)}  ${m4.toString(16)}`);
+alert(`word 1:  ${m5.toString(16)}  ${m6.toString(16)}`);
+
+
+
+// VMX memory structure and architecture of physical system (will be emulated in software as typescript-powered browser application with CanvasUI)
+// all chips will be implemented in typescript as ArrayBuffer instances with fast/direct DataView access
+// emulation code can/will use "near asm.js" optimizations for fastest possible processing in desktop and mobile browsers (may be even C-emscriptem)
+// for debugging purposes, all emulated memory chips will be also VISUALISED in near-realtime for DANA storage, FOX content and activity by SKINNER
+// interactive debugging will include all modern debugger features provided in scaleable CanvasUI dashboard - something Star-Trek game-alike (ITS FUN)
+// whole emulation will be used as prototype and testing environment for final hardware reimplementation into ARM Cortex-M4 powered target
+// initial design and prototyping of implementation will be done just here in emulator env FIRST; so all data structures must mimic limited HW chips
+
+
+
+LIST of required HW target chips:
+ - current technology allows max cca 8GB SPI/MMC FLASH chip and cca 2M ExtBus parallel PRAM/MRAM chip (nonvolatile)
+
+
+DANA-chip == large knowledgebase storage
+(slow access but persistence)
+-- 8GB   raw FLASH external (SPI/MMC) memory as DB storage for apps and data (support of PRAM mapped FLASH-blocks into 65816 page 01+ space, upto 16MB)
+         (together with files(?), there will be held DBs = databases(!) => in fact, BEST to use DBs as primary filesystem DBFS for apps+data storage too !!!)
+ 
+FOX-chip == creative processing core, running even hundereds or thousands 65VMXs communicating over DBMQs and persisting into DBFS
+(fast access + persistence/backup/failsafety = primary executive storage)
+-- 2MB   raw VM memory RAM/PRAM/MRAM external/"ExtBUS" to MCU (VM code execution, 6502 or 65816 machines mem-space including descriptor) = malloc/GC
+         (together with VMs there will be allocated MQs = message queues = DBMQ = memory mapped tables persistable into DBFS of DANA)
+
+SKINNER-chip == main VMX controller/scheduller/processor and peripherals interface [ARM Cortex-M4F]
+(very fast access without persistence => caching and quick flushing into FOX chip in case of VMX idle/exceptions or power-loss)
+-- 256kB raw MCU internal SRAM (VM records-linked-list + CACHES ... OR SIMPLY transparent CACHE of PRAM VM descriptors/registers)
+         (VM CPU registers: best to be stored in MCU SRAM, together with specified portion of "zero page", per VM descriptor => cached in SRAM)
+         (sure, part of SRAM will be used as scratchpad of whole VMX OS
+          => VMX implementation will be held in MCU internal 1MB FLASH, together with priority APPS = MCU internal FSDB having priority apps PRELOADED)
+
+ - Emulateed 6502/65816 VM are expected to be rock-solid and powered by all instrumentation and telemetry for VMX and emulation debugger
+ - 65VMX => massivelly multicore execution engine "MMXE-technology"
+ - each VM has completelly isolated/private memory space only and communicates through emulated INTERRUPTS and TRAPS with VMX and other VMs
+ - VMX can call all VMs through system NMI, on which VM MUST respond, otherwise is considered in failure state (system telemetry/control queries)
+ - VMs can receive from other VMs through apps IRQ which may be blocked by VM temporarily, so recvd "messages" are queued over FOX+DANA DBMQs
+ - VMs can transmit to other VMs or VMX through apps COP/BRK trap-call, so sent "commands" can be pushed into DBMQs and then invoke target IRQs
+ - VMs must SUBSCRIBE for receiving pushed messages from other VMs required and must allow subscription from others too
+ - VMX manages passing of commands to all target VMs who subscribed for push "notifications" = BUS/HUB for messages/commands (tx=command, tx=message)
+
+

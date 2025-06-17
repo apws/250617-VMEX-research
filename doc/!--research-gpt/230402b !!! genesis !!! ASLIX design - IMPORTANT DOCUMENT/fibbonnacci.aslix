@@ -1,0 +1,47 @@
+
+// VMEX synthesizer (ASLIX)
+
+// Define the function _fibbonacci
+func _fibbonacci:
+
+  // Assign registers to function local parameters and symbols
+  n:     x10
+  tmp:   x6
+  prev1: x7
+  prev2: x8
+  i:     x9
+
+  // Initialize tmp to 2
+  tmp = 2
+
+  // Check if n < 2 and return if true
+  if (n < tmp)      //possible to synthesize (n < 2)     // .if<level>
+    return
+  endif                                                    // .end<level>
+
+  // Initialize prev1 to 1, prev2 to 0
+  prev1 = 1
+  prev2 = 0
+
+  // Initialize i to 2
+  i = 2
+
+  // Execute the loop while i < n
+  loopif (i < n)                                          // .while<level>
+    //Store the current value of prev1 in tmp
+    tmp = prev1
+
+    // Update prev1 and prev2
+    prev1 += prev2
+    prev2 = tmp
+
+    // Increment i
+    i++
+  again                                                    // .end<level>
+
+  // Set n to the sum of prev1 and prev2
+  n = prev1 + prev2
+
+  // Return the value of n
+  return
+endfunc

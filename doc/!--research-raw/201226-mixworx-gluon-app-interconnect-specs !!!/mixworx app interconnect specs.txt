@@ -1,0 +1,31 @@
+
+mixworx app interconnect specs
+=======================================
+
+a) I have pure JavaFX GluonMobile application built using Susbtrate/GraalVM
+b) this application defines some easy "text based protocol" for calling/using platform specific service
+   (NOT needed to embed this app specific protocol as ATTACH-service implemented as REUSABLE THING in library,
+    its simply HIGH LEVEL THING, where for example configuration of platform-specific device will be done
+    for ONLY ONE application in platform(android,ios) project built regulary using AndroidStudio/XamarinStudio, XCode)
+c) I need some kind of "interprocess" communication (is this TCPIP? localhost Sockets? for example)
+   between GluonMobile app and ANOTHER APP/(always-on/launched service, in fact) built DIFFERENTLY as another process...
+d) I need to be able to send/queue COMMANDS to the service
+e) I need to be able to receive MESSAGES and/or ERRORS from the service, probably even ASYNC-queued too
+   (so, also messages initiated by service, catched and queued by GluonMobile thing)
+f) Is THIS "HIGHER-LEVEL localhost socket message-queuing thing" candidate to be implemented as general ATTACH-service?
+   (so transparent between DESKTOP/ANDROID/IOS too?? usefull? for me it sounds so...)
+
+WHAT YOU MEAN ABOUT THAT?
+
+
+
+Some closest examples found on the web:
+SQLITE as attach-service or at least portable example on desktop/mobile (BUT ITS OLD)
+https://gluonhq.com/embedding-database-cross-platform-projects/
+
+Some kind of JavaFX sockets implementation ??
+https://blogs.oracle.com/jtc/javafx,-sockets-and-threading:-lessons-learned
+https://github.com/jtconnors/com.jtconnors.socket
+
+
+

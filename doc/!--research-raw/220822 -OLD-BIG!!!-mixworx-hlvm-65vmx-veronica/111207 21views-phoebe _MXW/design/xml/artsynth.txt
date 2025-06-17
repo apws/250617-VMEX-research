@@ -1,0 +1,108 @@
+
+CRITA bitmap synthesizer language
+----------------------------------
+
+bitmap creations/animations by special very simply pareseable DSL
+
+panel: is mandatory container for "views" (by default laid out as "tiles" on panel, with some overlapping views "nested" on upper layers)
+ - only VIEW can serve as source/originator of "commands" (HOW EXACTLY commands are triggered is different thing, this is  defined in commands-triggers mapping)
+ - panel is implemented as System.Windows.Form (freely moveable on larger desktops, by hosting environment controls)
+ - view is implemented as System.Windows.Panel, can be by default tiled inside panel/form, but also overlaped on top (moveable views maintaining backgrounds)
+ - view is ultimate source of all events and has many visual "states", represented by CRITA language (Colors, Rectangles, Icons, Text + Animations = CRITA)
+ 
+bitmap: free graphic rectangle, LOADED from resource file (bmp, png, jpg) OR SYNTHSIZED by elementary "CRITA" operations applied
+ - it is rendered onto "view" only, on its implementing panel background, engine cares about proper repaints of overlapped views
+
+
+CRITA syntax example:
+--------------------------
+ - must be very easy to parse even on 8-bit controllers (they can target serially/slow connected mono/color graphic processors too)
+ - must be very compact for manual usage, for creation of quite complex graphic in code (on 8-mit micros, only raw bitmaps are usable and they are BBIIGG !!!)
+
+
+[?] comment prefix for all commands, such command is then ignored
+[?(...)] - comment for more commands
+[(...)] - this is ignored at all, simply prefixing by "?" ignores whole content, otherwise processed
+
+
+COLOR - set current pen color, mostly for filling rectangles OR specifying mask for multicolor icons
+=====
+ C:nnnnn; specified as number from RGB or better brightness-aware format or initially from color literal symbol enumeration
+ C:+nnnn; lighter by absolute change of brightness
+ C:-nnnn; darker by absolute change of brightness
+
+
+RECTANGLE - drawing rectangles filled with current color, coordinates can have +/- values, to be relative to min/max of current view size
+=========
+ R:x,y,w,h; - sized rectangle
+ R:x,y,s;   - sized square
+ R:x,y;     - last rectangle size used
+ CR:        - specific color as first arg
+
+ example:
+   R:0,0,20,2     - top line
+   R:0,20-2,20,2  - bottom line
+   R:0,0,2,10     - left line
+   R:20-2,0,2,10  - right line
+
+
+ICON - drawing bitmaps/icons specified by png/jpg/bmp or literal byte arrays
+====
+ I:file.ext       - rendering at 0,0
+ I:file.ext,2     - rendering at 0,0 zoomed 2x
+ I:x,y,file.ext   - rendering at x,y
+ I:x,y,$hh$hh$hh$hh$hh$hh$hh$hh - rendering 1bpp bitmap (current color) at x,y
+ I:x,y,%bbbbbbbb%bbbbbbbb%bbbbbbbb%bbbbbbbb%bbbbbbbbb%bbbbbbbb%bbbbbbbb%bbbbbbb - rendering 1bpp bitmap (curernt color) at x,y
+ CI:              - specific color as first arg
+
+ for 1bpp bitmaps, 0 means mask, 1 means pen color
+ for multicolor bitmaps, current pen color means mask
+
+
+TEXT
+====
+ T:file.ext - specifies bitmap file defining current codepaged font 1bpp bitmaps
+ T:"codepaged-string" - renders text using current font bitmap
+ T:"codepaged-string",file.ext - renders text using specific font 1bpp bitmap
+ CT: - specific color as first arg
+
+
+ANIMATIONS - parser registers all used view state animations and then processes them vhen applied as view states using CYCLE timing
+==========
+ AW:t - waits t*CYCLE miliseconds
+ AL:  - loops entire CRITA script
+ 
+ Animations are solely for bitmap changes managed inside current views positions. To animate views movements, panels receive commands
+ for their views manipulation, the same as views receive commands for their states changes. So when bunch of views needs to be moved
+ (simply for example views-grid visualising some fyling "window" into large sheet), then panel receives batch command for all views to
+ be moved in one engine interface roundtrip using VML (views manipulation language).
+
+
+
+Engine control languages - VDL and VML
+======================================
+There is another language for sending such commands and receiving events for engine. This language is VML (views manipulation language)
+which is core of communication between consuming client and engine over transparent link (usually binray encoded trees based on xml source
+code and encapsulated by some container protocol, by default MIDI SYSEX). Initial configuration of engine is performed by language called
+VDL (views definition language) witch is simply XML-based, again binary encodeed and transfered over transport during initializaiton
+of UI engine "server".
+
+
+VDL specification
+=================
+XSD powered XML file format for initializaiton of UI engine panels/views
+ - very simple description of all panels, his views, his states and referenced resources (bitmaps)
+ 
+
+VML specification
+=================
+view-states/event-commands language for controlling panels/views/states and receiving their commands events
+ - very simple description of passing messages to engine and processing commands from views
+ 
+
+Transport/container/format specification
+=================================
+container protocols for messaging between client application and UI server
+ - default format is binary encoded IFF streams, similar to MIDI format
+ - default container is MIDI SYSEX
+ - default transport is full-duplex channel link (serial-io, net-sockets, ...)

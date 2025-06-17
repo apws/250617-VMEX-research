@@ -1,0 +1,95 @@
+
+16bit VM/OS+HAL (HLLCA) - quarkfxvm (originally quarkfx is limited micropython, but quarkfxvm is even more compact virtual 16bit tiny OS
+=========================================================================================================================================
+-- "bitter16" temporary codename - public codename "veronica" ??? )))
+-- will be implemented as totally portable arduino sketch in CPP (up to 24kb for 32kB flash ??)
+  -- possibly easily portable to "out-of-aruduino" CPP projects on arduino unsupported MCUs ... (but basic idea is around simple arduino env)
+-- will be virtually multicore/multitask - each core having its own VM limits as below
+-- code will be stored/executed from PFLASH or MEMORY, using REGSTK in MCU SRAM and accessing MEMORY in SPI PSRAM
+-- code will have its EXPR STACK at the END of CORE REGSTK segment and CALL STACK (activation frames) at the END of CORE MEMORY segment
+-- code CAN use available internal MCU SRAM as CACHE for external SPI PSRAM access ??? or rather for EXPRESSION STACK per task/core ???
+-- PFLASH will be programmed using MULTIPLATFORM OPTIBOOT API 
+-- smallest devices to run such VM/OS will be 8bit microchip megaTinyCore devices by default, at least 32k flash (8k free) and 2k SRAM
+-- using only relative/relocatable adressing in code
+-- using symbol tables for lables/reg/meemory segments during compilation + totally relocatable code
+-- codeable from JAVA-like syntax transpiled/compiled into VM/OS+HAL assembler code (assembler VERY similar to java-like source in fact) = HLLCA
+-- expressions encoded using expression stack machine ( ??? STILL QUESTION if STACK or REGS !!! )
+-- embedded VM debugging/tracing/monitoring features from HOST (java-emulation of target)
+-- combination of basic core RISC + HAL API VCISC architecture, so VM will be closer to SOURCE CODE that to MACHINE CODE (HLLCA)
+-- emulator of entire VM/OS+HAL reference/development system written in JAVA
+
+each core/task has available and defined in context:
+ -- number of cores/tasks is limited only by available MCU resources (FLASH+SRAM) and optional MEMORY (+ shared TABLES)
+PFLASH space = 64kB max (defined by 512 1k 2k 4k 8k 16k 32k 64k) - program space
+REGSTK space = 8kB max (defined by 64 128 256 512 1k 2k 4k 8k) - 16 16bit registers + coredef + expr-stack
+MEMORY space = 64kB max (defined by 0 512 1k 2k 4k 8k 16k 32k 64k) - data space
+
+shared
+TABLES space = 256MB max - external (Q)SPI flash
+
+cores/tasks can be loaded and suspended from/to MEMORY and hibernated from/to TABLES storage
+
+each MCU CAN have connected tables/storage chip with basic read-only symbols/strings vocabulary stored as TABs of RECs
+TABLES space = tiny tables "filesystem" - may be ineffective but simple PAGE-ORIENTED storage of TABs of RECs, shared by ALL TASKS concurrently
+
+larger MCU with enough FLASH (say 256k) and SRAM (say 256k) can live without such external components but its all upon application
+tiny MCU CAN HAVE connected SPI nvSRAM as MEMORY and also SPI FLASH as TABLES storage
+tiny MCU will be rather used for TINY apps, having only few cores/tasks, in worst case only just 1 core/task and no MEMORY nor TABLES
+
+HERE WE COUNT WITH 16bit WIDE ISA FOR STACK BASED EXPRESSIONS
+!!! -- THIS IS REALLY HLL VM !!! contrary to RISC inspired !!!
+==============================================================
+basic instructions 16bit wide
+basic data 8bit BYTE(byte) 16bit WORD(short) BYTE[](byte[]) (8bit string/buffer) WORD[](short[]) (16bit string/buffer)
+basic strings(BSTR,WSTR) = BYTE[](bytes) or WORD[](string)
+basic numbers(NUM) = BCD encoded arbitrary fixed point 2 (binary) 8(oct) 10(dec=bcd) 16(hex)
+basic records(REC) = PIPE separated ASCII records of string fields
+basic tables(TAB) (req TABLES segment) = CR separated ASCII lists of records having header describing names and types of fields
+
+==========================================================================================================================================
+(POSSIBLY WE WILL USE RISC-V INSPIRED "RX16E" ???? MAY BE THAT STACK BASED ISA WILL BE FAR BETTER FOR INTERPRETED VM ????????????????????)
+==========================================================================================================================================
+
+extended instructions define HAL API access (common subset of arduino/circuitpython HW access - based on libraries declared in project)
+32bit wide extended opcodes/traps for HAL API access, even for different versions of API or 16bit instructions + 8bit versions ???
+extended instructions calls having defined also ASCII/BCD defined params in text form (declared at the begin of task)
+parameter types defined by 16bit parameter descriptors as first byte of param (defining type and length)
+  -- HAL API function itself parses its params
+  -- so, type information is embedded in VM code for easy DISASSEMBLY !!!
+
+basic 8/16bit aritmetic on registers
+basic string processing on BYTE/WORD arrays
+basic array processing on arrays
+basic numbers aritmetic on BCD encoded BYTE/WORD arrays
+
+everythin in 24k of C code:
+as simplest as possible ASSEMBLER
+as simplest as possible DISASSEMBLER (parsing VCISC HAL API calls and also stack based RISC expressions)
+as simplest as possible INTERPRETER
+as simplest as possible REPL over default Serial IO (TX/RX UART) - allowing to ASSEMBLE/DISASSEMBLE here around basic HAL API call !!!)
+  -- so possible to write basic BLINK and SERIAL examples and other simple HAL API tests in VM/OS ASM directly on device !!!
+  -- REPL supporting basic debugging/code monitoring/tracing functions !!!
+
+!!! write/tweak default implementation in pure portable JAVA !!!
+
+possible to use tiny portable "quarkfxvm" for implementation of micropython compatible
+quarkfx or RATHER target circuitfx code against VM directly !!! BETTER OPTION TO SKIP MICROPYTHON ENTIRELY !!!
+
+REGSTK area (per core/task)
+=============================
+stores REGISTERS and EXPRESSION STACK for core/task
+for FASTER processing expressions is possible to use REGISTERS ACCESS  ??? CISC STACK vs RISC REGS ??? 
+it means that we have "typed" declarations of registers/arrays where we can assign result of expressions
+anywhere in program we can use REGISTERS to process values or direct expressions, evaluated on EXPRESSION STACK
+such results from REGISTERS and EXPRSTACK can be passed to HAL API calls which store such values on CALLSTACK as FRAMES of "var" LOCALS
+
+
+bitter16 com org net -- registered domain !!!
+
+there will be more modular PROFILES of bitter16 ...
+======================================================
+integer-only
+floating-point
+tables
+modular libraries
+...

@@ -1,0 +1,15 @@
+
+
+high level virtual machine = ALU + FCU + RECORDS + TABLES
+==========================================================
+
+primitive types (record fields): u8, u16, u32, u64, s8, s16, s32, s64, f8, f16, f32, f64, bool, string
+
+record type: (set of fields): declared { name:type, ... }
+
+table type: (array/list of records): array is indexable, list is hashable by first id field
+
+
+
+
+

@@ -1,0 +1,12 @@
+
+text format of sally program lines
+
+Lnnnn PN Inn Tnn Vnn Mnn Pnn - indent, typedef, variable, method, parameter
+
+L0005 PN I00 M01 T01 P01 T01 P02 T01
+L0010 PN I00 T05 T01 TYPEDEF
+L0020 PN I00 V01 0 SET
+L0030 PN I00 V02 V01 VAL 1 + SET
+L0030 PN I00 V02 DUP VAL ++ SET
+
+

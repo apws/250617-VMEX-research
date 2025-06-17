@@ -1,0 +1,126 @@
+<xml>
+
+  <app>
+
+    <db></db>
+
+    <ui>
+
+      <panels>
+        <panel name="" size="" move="" zoom="" file="">
+          <views>
+            <view name="" size="" move="" tile="" file="">
+              <states>
+                <state name=""></state>
+                <state name=""></state>
+              </states>
+              <events>
+                <event name="" trig="" maps=""></event>
+                <event name="" trig="" maps=""></event>
+              </events>
+            </view>
+            <view name="" size="" move="" tile="" file="" />
+          </views>
+          <resources>
+            <resource name="" file=""></resource>
+            <resource name="" file=""></resource>
+          </resources>
+          <commands>
+            <command name="" code=""></command>
+            <command name="" code=""></command>
+          </commands>
+        </panel>
+
+        <panel name="" size="" move="" zoom="" file=""></panel>
+
+        <panel name="" size="" move="" zoom="" file="" xref="panel">
+          <views ref="panel">
+            <view name="" size="" move="" tile="" file="" xref="panel.view">
+              <states ref="panel.view">
+                <state name=""></state>
+                <state name=""></state>
+              </states>
+              <events ref="panel.view">
+                <event name="" trig="" maps=""></event>
+                <event name="" trig="" maps=""></event>
+              </events>
+            </view>
+            <view name="" size="" move="" tile="" file="" xref="panel.view" />
+          </views>
+          <resources ref="panel">
+            <resource name="" file="" xref="app.resource"></resource>
+            <resource name="" file=""></resource>
+          </resources>
+          <commands>
+            <command name="" code="" xref="app.command"></command>
+            <command name="" code=""></command>
+          </commands>
+        </panel>
+
+        <panel name="" size="" move="" zoom="" file="" xref="panel">
+          <views ref="panel">
+            <view name="" size="" move="" tile="" file="" xref="panel.view">
+              <states ref="panel.view">
+                <state name=""></state>
+                <state name=""></state>
+              </states>
+              <events ref="panel.view">
+                <event name="" trig="" maps=""></event>
+                <event name="" trig="" maps=""></event>
+              </events>
+            </view>
+            <view name="" size="" move="" tile="" file="" xref="panel.view" />
+          </views>
+          <resources ref="panel">
+            <resource name="" file="" xref="app.resource"></resource>
+            <resource name="" file=""></resource>
+          </resources>
+          <commands>
+            <command name="" code="" xref="app.command"></command>
+            <command name="" code=""></command>
+          </commands>
+        </panel>
+
+      </panels>
+
+
+      <views>
+        <view name="" file=""></view>
+        <view name="" file=""></view>
+      </views>
+
+
+      <resources>
+        <resource name="" file=""></resource>
+        <resource name="" file=""></resource>
+      </resources>
+
+
+      <commands>
+        <command name="" code=""></command>
+        <command name="" code=""></command>
+      </commands>
+
+
+      <triggers>
+        <trigger name="" file="">
+          <mappings>
+            <mapping name =""></mapping>
+            <mapping name =""></mapping>
+          </mappings>
+        </trigger>
+        <trigger name="" file=""></trigger>
+        <trigger name="" file=""></trigger>
+      </triggers>
+
+
+      <controls>
+        <control name=""></control>
+        <control name=""></control>
+      </controls>
+
+    </ui>
+
+  </app>
+
+</xml>
